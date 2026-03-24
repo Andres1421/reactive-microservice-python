@@ -1,20 +1,20 @@
-# Imagen base
 FROM python:3.12-slim
 
-# Directorio de trabajo
 WORKDIR /app
 
-# Copiar requirements
+# Instala dependencias de build (gcc, etc)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 
-# Instalar dependencias
+# Instala dependencias Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código
 COPY main.py .
 
-# Exponer puerto
 EXPOSE 8000
 
-# Comando para correr
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
