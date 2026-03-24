@@ -6,10 +6,10 @@ from bson.objectid import ObjectId
 
 app = FastAPI(title="Reactive Microservice")
 
-# MongoDB Atlas
+# MongoDB Atlas (Motor maneja SSL automáticamente con mongodb+srv://)
 MONGODB_URL = os.getenv(
     "MONGODB_URL",
-    "mongodb+srv://andresmayorga07_db_user:7IPNTBRWe5TebqTQ@cluster0.5ygvgvg.mongodb.net/reactive_db?appName=Cluster0"
+    "mongodb+srv://andresmayorga07_db_user:7IPNTBRWe5TebqTQ@cluster0.5ygvgvg.mongodb.net/reactive_db?retryWrites=true&w=majority"
 )
 
 client = AsyncIOMotorClient(MONGODB_URL)
