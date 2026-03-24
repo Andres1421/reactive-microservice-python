@@ -6,7 +6,7 @@ from bson.objectid import ObjectId
 
 app = FastAPI(title="Reactive Microservice")
 
-# Usa MONGODB_URL del environment, default a local
+# Variable de entorno con valor default (para desarrollo local)
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017/reactive_db")
 
 client = AsyncIOMotorClient(MONGODB_URL)
