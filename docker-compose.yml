@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URL: mongodb+srv://andresmayorga07_db_user:7IPNTBRWe5TebqTQ@cluster0.5ygvgvg.mongodb.net/reactive_db?appName=Cluster0
