@@ -6,8 +6,7 @@ from bson.objectid import ObjectId
 
 app = FastAPI(title="Reactive Microservice")
 
-# Variable de entorno con valor default (para desarrollo local)
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017/reactive_db")
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://mongo:27017/reactive_db")
 
 client = AsyncIOMotorClient(MONGODB_URL)
 db = client.reactive_db
@@ -41,18 +40,11 @@ async def create_item(item: Item):
 @app.post("/items/batch")
 async def create_items_batch(items: list[Item], notify: bool = Query(False)):
     result = await db.items.insert_many([item.model_dump() for item in items])
-    return {
-        "inserted": len(result.inserted_ids),
-        "notify": notify,
-        "ids": [str(id) for id in result.inserted_ids]
-    }
+    return {"inserted": len(result.inserted_ids), "notify": notify, "ids": [str(id) for id in result.inserted_ids]}
 
 @app.put("/items/{item_id}")
 async def update_item(item_id: str, item: Item):
-    result = await db.items.update_one(
-        {"_id": ObjectId(item_id)},
-        {"$set": item.model_dump(exclude_unset=True)}
-    )
+    result = await db.items.update_one({"_id": ObjectId(item_id)}, {"$set": item.model_dump(exclude_unset=True)})
     return {"updated": result.modified_count > 0}
 
 @app.delete("/items/{item_id}")
