@@ -1,5 +1,6 @@
 import os
 import certifi
+import asyncio
 from fastapi import FastAPI, Query, Path
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
@@ -12,7 +13,7 @@ MONGODB_URL = os.getenv("MONGODB_URL")
 if not MONGODB_URL:
     raise ValueError("MONGODB_URL environment variable not set")
 
-client = AsyncIOMotorClient(MONGODB_URL, tlsCAFile=certifi.where())
+client = AsyncIOMotorClient(MONGODB_URL, tlsCAFile=certifi.where(), tls=True)
 db = client.reactive_db
 
 class Item(BaseModel):
@@ -23,6 +24,11 @@ class Item(BaseModel):
 @app.get("/")
 async def root():
     return {"message": "Reactive Microservice with Python"}
+
+@app.get("/slow")
+async def slow_endpoint():
+    await asyncio.sleep(3)  # Simula operación lenta (DB, API externa)
+    return {"message": "done after 3s"}
 
 @app.get("/search")
 async def search(q: str = Query(..., min_length=1), skip: int = 0, limit: int = 10):
