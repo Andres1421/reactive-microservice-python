@@ -17,11 +17,30 @@ Reactive programming maneja múltiples requests sin bloquear threads.
 
 ---
 
+## 🚀 Proof - Comportamiento Reactivo
+
+El endpoint `/slow` simula una operación lenta de 3 segundos (como una query a BD o llamada a API externa).
+
+```bash
+# Lanzá 5 requests al mismo tiempo
+for i in {1..5}; do
+  curl https://starfish-app-9doop.ondigitalocean.app/slow &
+done
+```
+
+**Resultado esperado:** Los 5 responden en ~3s (en paralelo)
+
+**Si fuera síncrono:** 3s, 6s, 9s, 12s, 15s (uno por uno)
+
+Esto demuestra que el event loop maneja múltiples requests simultáneos con un solo thread. ✅
+
+---
+
 ## Instalación
 
 ### Requisitos
 - **Python 3.10+**
-- **MongoDB** (local o Docker)
+- **MongoDB** (local o Atlas)
 - **pip** (package manager)
 
 ### 1. Clonar proyecto
@@ -33,21 +52,17 @@ cd reactive-microservice-python
 ### 2. Crear virtual environment
 ```bash
 python3 -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
+source venv/bin/activate
 ```
 
 ### 3. Instalar dependencias
 ```bash
-python3 -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-### 4. Iniciar MongoDB
+### 4. Setear variable de entorno
 ```bash
-# Opción A: Docker (recomendado)
-docker run -d -p 27017:27017 mongo
-
-# Opción B: Local (si tienes MongoDB instalado)
-mongod
+export MONGODB_URL="mongodb+srv://user:password@cluster.mongodb.net/reactive_db?appName=Cluster0"
 ```
 
 ### 5. Correr servidor
@@ -55,62 +70,51 @@ mongod
 python3 -m uvicorn main:app --reload
 ```
 
-Deberías ver:
-```
-Uvicorn running on http://127.0.0.1:8000
-```
-
 ---
 
-## Usar la API
+## Endpoints
 
-### Swagger UI (interactivo)
-Abre en tu browser: **http://localhost:8000/docs**
-
-### Ejemplos con curl
-
-**1. GET root**
+### 🔥 Reactive Proof
 ```bash
-curl http://localhost:8000/
+for i in {1..5}; do
+  curl https://starfish-app-9doop.ondigitalocean.app/slow &
+done
 ```
 
-**2. Crear item (POST)**
+### CRUD Items
+
 ```bash
-curl -X POST http://localhost:8000/items/ \
+# Crear
+curl -X POST https://starfish-app-9doop.ondigitalocean.app/items/ \
   -H "Content-Type: application/json" \
   -d '{"name": "Laptop", "description": "Dell XPS", "price": 1500}'
-```
 
-Response:
-```json
-{"id": "507f1f77bcf86cd799439011", "created": true}
-```
+# Listar
+curl "https://starfish-app-9doop.ondigitalocean.app/items?skip=0&limit=10"
 
-**3. Buscar (GET con query)**
-```bash
-curl "http://localhost:8000/search?q=laptop&limit=5"
-```
+# Obtener por ID
+curl https://starfish-app-9doop.ondigitalocean.app/items/{id}
 
-**4. Obtener por ID (GET con path)**
-```bash
-curl http://localhost:8000/items/507f1f77bcf86cd799439011
-```
+# Buscar
+curl "https://starfish-app-9doop.ondigitalocean.app/search?q=laptop"
 
-**5. Listar items (GET)**
-```bash
-curl "http://localhost:8000/items?skip=0&limit=10"
-```
+# Batch create
+curl -X POST https://starfish-app-9doop.ondigitalocean.app/items/batch \
+  -H "Content-Type: application/json" \
+  -d '[{"name": "Mouse", "price": 50}, {"name": "Teclado", "price": 80}]'
 
-**6. Actualizar (PUT)**
-```bash
-curl -X PUT http://localhost:8000/items/507f1f77bcf86cd799439011 \
+# Actualizar
+curl -X PUT https://starfish-app-9doop.ondigitalocean.app/items/{id} \
   -H "Content-Type: application/json" \
   -d '{"name": "Updated", "price": 2000}'
+
+# Eliminar
+curl -X DELETE https://starfish-app-9doop.ondigitalocean.app/items/{id}
 ```
 
-**7. Eliminar (DELETE)**
-```bash
-curl -X DELETE http://localhost:8000/items/507f1f77bcf86cd799439011
+### 📖 Swagger UI
+```
+https://starfish-app-9doop.ondigitalocean.app/docs
 ```
 
 ---
@@ -121,37 +125,17 @@ FastAPI (async framework)
     ↓
 Motor (async MongoDB driver)
     ↓
-MongoDB
-```
-
-**¿Por qué async?**
-- `async def` = no bloquea el thread
-- `await` = espera sin bloquear
-- Event loop maneja múltiples requests
-
----
-
-## Archivo de dependencias
-
-El `requirements.txt` tiene:
-```
-fastapi==0.104.1
-uvicorn==0.24.0
-motor==3.3.2
-pymongo==4.6.0
-pydantic==2.5.0
+MongoDB Atlas
 ```
 
 ---
 
-## Próximos pasos
-
-- [ ] Validaciones y manejo de errores
-- [ ] Logging
-- [ ] Dockerfile
-- [ ] Tests
-- [ ] Autenticación JWT
-
----
-
-**Info extra:** Reactive = No bloqueas threads, usas async/await para que un único thread maneje múltiples requests simultáneamente.
+## Stack
+```
+fastapi
+uvicorn
+motor
+pymongo
+pydantic
+certifi
+```
